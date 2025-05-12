@@ -1,17 +1,22 @@
 package com.ben3li.login_api.servicios.impl;
 
 import java.security.Key;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import com.ben3li.login_api.seguridad.GestorDeClaves;
 import com.ben3li.login_api.seguridad.LoginUserDetailsService;
 import com.ben3li.login_api.servicios.AuthenticationService;
 
@@ -25,9 +30,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService{
-
-    private final LoginUserDetailsService loginUserDetailsService;
+    //@Qualifier("loginUserDetailsService")
+    private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
+
+    private final PrivateKey clavePrivada;
+    private final PublicKey clavePublica;
 
     @Value("${jwt.secretKey}")
     private String secretKey;
@@ -37,18 +45,18 @@ public class AuthenticationServiceImpl implements AuthenticationService{
        authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(email, password)
        );
-       return loginUserDetailsService.loadUserByUsername(email);
+       return userDetailsService.loadUserByUsername(email);
     }
 
     @Override
-    public String generarToken(UserDetails userDetails, long expiraEn) {
+    public String generarToken(UserDetails userDetails, long expiraEn){
         Map<String,Object> claims = new HashMap<>();
         
         return Jwts.builder()
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis()+expiraEn))
                     .setClaims(claims)
-                    .signWith(getClaveCodificadora(secretKey),SignatureAlgorithm.HS256)
+                    .signWith(clavePrivada, SignatureAlgorithm.RS256)
                     .setSubject(userDetails.getUsername())
                     .compact();
     }
@@ -56,11 +64,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     @Override
     public UserDetails validarToken(String token) {
         Claims claims = Jwts.parserBuilder()
-                            .setSigningKey(getClaveCodificadora(secretKey))
+                            .setSigningKey(clavePublica)
                             .build()
                             .parseClaimsJws(token)
                             .getBody();
-        return loginUserDetailsService.loadUserByUsername(claims.getSubject());
+        return userDetailsService.loadUserByUsername(claims.getSubject());
     }
 
     private Key getClaveCodificadora(String secretKey){

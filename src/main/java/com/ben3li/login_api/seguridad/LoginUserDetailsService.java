@@ -10,7 +10,7 @@ import com.ben3li.login_api.repositorio.UsuarioRepositorio;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Service //("loginUserDetailsService")
 @RequiredArgsConstructor
 public class LoginUserDetailsService implements UserDetailsService{
 

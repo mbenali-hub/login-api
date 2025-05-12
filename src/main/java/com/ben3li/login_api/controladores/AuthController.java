@@ -28,7 +28,8 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
 
-    private long expiraEn=900000;
+    private long accesTokenExpiraEn=900000;
+    private long refreshTokenExpiraEn=604800000;
     @PostMapping("/registro")
     public ResponseEntity<UsuarioDTO> crearUsuario(
         @RequestBody LoginRegistroRequest loginRegistroRequest
@@ -42,8 +43,9 @@ public class AuthController {
         @RequestBody LoginRegistroRequest loginRegistroRequest
     ){
         UserDetails userDetails = authenticationService.autenticar(loginRegistroRequest.getEmail(), loginRegistroRequest.getPassword());
-        String tokenAcceso = authenticationService.generarToken(userDetails, expiraEn);
-        AuthResponse authResponse = new AuthResponse(tokenAcceso, expiraEn);
+        String tokenAcceso = authenticationService.generarToken(userDetails, accesTokenExpiraEn);
+        String refreshToken = authenticationService.generarToken(userDetails, refreshTokenExpiraEn);
+        AuthResponse authResponse = new AuthResponse(tokenAcceso, refreshToken, accesTokenExpiraEn, refreshTokenExpiraEn);
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
@@ -54,8 +56,8 @@ public class AuthController {
     ){ 
         String refreshToken = authenticationService.extraerToken(request);
         UserDetails userDetails = authenticationService.validarToken(refreshToken);
-        String tokenAcceso = authenticationService.generarToken(userDetails, expiraEn);
+        String tokenAcceso = authenticationService.generarToken(userDetails, accesTokenExpiraEn);
 
-        return new ResponseEntity<>(new AuthResponse(tokenAcceso, expiraEn), HttpStatus.OK);
+        return new ResponseEntity<>(new AuthResponse(tokenAcceso,null, accesTokenExpiraEn,0), HttpStatus.OK);
     }
 }
