@@ -1,58 +1,59 @@
 package com.ben3li.login_api.seguridad;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-
-import javax.crypto.EncryptedPrivateKeyInfo;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 public class GestorDeClaves {
 
-    public static PrivateKey cargarClavePrivada(String pemFilePath, String password) throws Exception {
-        // 1. Leer el archivo PEM
-        try (InputStream fis = GestorDeClaves.class.getClassLoader().getResourceAsStream(pemFilePath)) {
-            if (fis == null) {
-                throw new RuntimeException("Archivo no encontrado: " + pemFilePath);
-            }
-            byte[] pemBytes = fis.readAllBytes();
+    public static PrivateKey cargarClavePrivada(String ruta, String password, String aliasClavePrivada) throws Exception {
 
-            // 2. Procesar la clave encriptada
-            EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = new EncryptedPrivateKeyInfo(pemBytes);
-            
-            // 3. Usar la contraseña para desencriptar
-            PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray());
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(
-                encryptedPrivateKeyInfo.getAlgName()
-            );
-            
-            PKCS8EncodedKeySpec keySpec = encryptedPrivateKeyInfo.getKeySpec(
-                skf.generateSecret(pbeKeySpec)
-            );
-            
-            // 4. Generar la clave privada
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePrivate(keySpec);
-        }
+        KeyStore keyStore = cargarAlmacen(ruta, password);
+        return obtenerPrivateKeyDelAlmacen(keyStore, password, aliasClavePrivada);
     }
 
+    public static PublicKey cargarClavePublica(String rutaAlmacenPublico, String password, String aliasCalvePublica) throws Exception{
+       KeyStore keyStore = cargarAlmacen(rutaAlmacenPublico, password);
 
-    public static PublicKey cargarClavePublica(String ruta){
-        PublicKey clavePublica = null;
-        try(InputStream fis = GestorDeClaves.class.getClassLoader().getResourceAsStream(ruta)){
-            byte[] claveEnBytes = fis.readAllBytes();
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(claveEnBytes, "RSA");
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+       PublicKey publicKey = keyStore.getCertificate(aliasCalvePublica).getPublicKey();
+       return publicKey;
+    }
 
-            clavePublica = keyFactory.generatePublic(keySpec);
-        }catch(Exception e){
+    private static PrivateKey obtenerPrivateKeyDelAlmacen(KeyStore keyStore, String password, String aliasClavePrivada){
+        PrivateKey privateKey=null;
+
+        try {
+            privateKey = (PrivateKey) keyStore.getKey(aliasClavePrivada, password.toCharArray());
+        } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return clavePublica;
+
+        return privateKey;
     }
+
+    private static KeyStore cargarAlmacen(String ruta, String password){
+        KeyStore keyStore = null;
+
+        try {
+            keyStore = KeyStore.getInstance("PKCS12");
+            keyStore.load(new FileInputStream(ruta), password.toCharArray());
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return keyStore;
+    }
+
 }

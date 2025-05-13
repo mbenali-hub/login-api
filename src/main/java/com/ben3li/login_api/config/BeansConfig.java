@@ -2,7 +2,9 @@ package com.ben3li.login_api.config;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.ben3li.login_api.seguridad.GestorDeClaves;
+
+import jakarta.annotation.PostConstruct;
 
 
 @Configuration
@@ -33,14 +37,21 @@ public class BeansConfig {
         return http.build();
     }
 
+     @PostConstruct
+    public void registerBouncyCastle() {
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
+    
     @Bean
     public PrivateKey privateKey() throws Exception{
-        return GestorDeClaves.cargarClavePrivada("/claves/private_api_login_key.pem","123qwe");
+        return GestorDeClaves.cargarClavePrivada("/mnt/mi_almacen.jks","123qwe","clave_api_login" );
     }
 
     @Bean
-    public PublicKey publicKey(){
-        return GestorDeClaves.cargarClavePublica("/claves/public_api_login_key.pem");
+    public PublicKey publicKey() throws Exception{
+        return GestorDeClaves.cargarClavePublica("mnt/almacen_publico.jks", "123qwe", "api_login_public.cer");
     }
     @Bean
     public PasswordEncoder passwordEncoder(){
