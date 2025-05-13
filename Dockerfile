@@ -4,8 +4,6 @@ FROM openjdk:21-jdk-slim
 # Copia el archivo JAR de tu aplicación al contenedor
 COPY target/login-api-0.0.1-SNAPSHOT.jar /app/mi-api-login.jar
 
-COPY src/main/resources/claves/private_api_login_key.pem /app/claves/private_api_login_key.pem
-
 # Expone el puerto 8080 para que sea accesible desde fuera del contenedor
 EXPOSE 8080
 

@@ -37,9 +37,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final PrivateKey clavePrivada;
     private final PublicKey clavePublica;
 
-    @Value("${jwt.secretKey}")
-    private String secretKey;
-
     @Override
     public UserDetails autenticar(String email, String password) {
        authenticationManager.authenticate(

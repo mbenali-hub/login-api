@@ -6,29 +6,41 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LoginApiApplication implements CommandLineRunner {
+public class LoginApiApplication implements CommandLineRunner{
+    
+     @Value("${keystore.private.path}")
+    private String rutaAlmacen;
 
-   @Value("${spring.datasource.username}")
-    private String dbUser;
+    @Value("${keystore.private.password}")
+    private String passwordAlmacen;
 
-    @Value("${spring.datasource.password}")
-    private String dbPass;
+    @Value("${keystore.private.key-password}")
+    private String passwordPrivateKey;
 
-    @Value("${jwt.secretKey}")
-    private String jwtSecret;
+    @Value("${keystore.private.key-alias}")
+    private String aliasPrivateKey;
 
-    @Value("${spring.datasource.url}")
-    private String dbUrl;
+    @Value("${keystore.public.path}")
+    private String rutaAlmacenPublico;
+
+    @Value("${keystore.public.password}")
+    private String passwordAlmacenPublico;
+
+    @Value("${keystore.public.key-alias}")
+    private String aliasPublicKey;
 
     public static void main(String[] args) {
         SpringApplication.run(LoginApiApplication.class, args);
     }
 
     @Override
-    public void run(String... args) {
-        System.out.println("🔧 spring.datasource.url = " + dbUrl);
-        System.out.println("👤 spring.datasource.username = " + dbUser);
-        System.out.println("🔐 spring.datasource.password = " + dbPass);  // ⚠️ Solo en dev
-        System.out.println("🔑 jwt.secretKey = " + jwtSecret);            // ⚠️ Solo en dev
+    public void run(String... args) throws Exception {
+         System.out.println("Ruta del Almacen Privado: " + rutaAlmacen);
+        System.out.println("Password del Almacen Privado: " + passwordAlmacen);
+        System.out.println("Password de la Clave Privada: " + passwordPrivateKey);
+        System.out.println("Alias de la Clave Privada: " + aliasPrivateKey);
+        System.out.println("Ruta del Almacen Público: " + rutaAlmacenPublico);
+        System.out.println("Password del Almacen Público: " + passwordAlmacenPublico);
+        System.out.println("Alias de la Clave Pública: " + aliasPublicKey);
     }
 }

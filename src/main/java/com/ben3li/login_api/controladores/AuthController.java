@@ -30,6 +30,7 @@ public class AuthController {
 
     private long accesTokenExpiraEn=900000;
     private long refreshTokenExpiraEn=604800000;
+    
     @PostMapping("/registro")
     public ResponseEntity<UsuarioDTO> crearUsuario(
         @RequestBody LoginRegistroRequest loginRegistroRequest

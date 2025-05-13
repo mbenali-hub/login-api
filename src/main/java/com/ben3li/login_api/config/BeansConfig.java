@@ -19,14 +19,32 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.ben3li.login_api.seguridad.GestorDeClaves;
 
-import jakarta.annotation.PostConstruct;
 
 
 @Configuration
 public class BeansConfig {
 
-    @Value("${claveArchivoPEM}")
-    private String claveArchivoPEM;
+    @Value("${keystore.private.path}")
+    private String rutaAlmacen;
+
+    @Value("${keystore.private.password}")
+    private String passwordAlmacen;
+
+    @Value("${keystore.private.key-password}")
+    private String passwordPrivateKey;
+
+    @Value("${keystore.private.key-alias}")
+    private String aliasPrivateKey;
+
+    @Value("${keystore.public.path}")
+    private String rutaAlmacenPublico;
+
+    @Value("${keystore.public.password}")
+    private String passwordAlmacenPublico;
+
+    @Value("${keystore.public.key-alias}")
+    private String aliasPublicKey;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.authorizeHttpRequests(auth-> auth
@@ -37,21 +55,15 @@ public class BeansConfig {
         return http.build();
     }
 
-     @PostConstruct
-    public void registerBouncyCastle() {
-        if (Security.getProvider("BC") == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-    
+
     @Bean
     public PrivateKey privateKey() throws Exception{
-        return GestorDeClaves.cargarClavePrivada("/mnt/mi_almacen.jks","123qwe","clave_api_login" );
+        return GestorDeClaves.cargarClavePrivada(rutaAlmacen,passwordAlmacen,aliasPrivateKey);
     }
 
     @Bean
     public PublicKey publicKey() throws Exception{
-        return GestorDeClaves.cargarClavePublica("mnt/almacen_publico.jks", "123qwe", "api_login_public.cer");
+        return GestorDeClaves.cargarClavePublica(rutaAlmacenPublico, passwordAlmacenPublico, aliasPublicKey);
     }
     @Bean
     public PasswordEncoder passwordEncoder(){
