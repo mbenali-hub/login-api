@@ -7,7 +7,7 @@ services:
     ports:
       - "8181:8181"
     volumes:
-      - C:\Users\mohab\Desktop:/mnt
+      - ${RUTA_HOST}:/mnt
     environment:
       - spring.datasource.url=jdbc:mysql://db:3306/db_usuarios
       - spring.datasource.username=${MYSQL_USER}

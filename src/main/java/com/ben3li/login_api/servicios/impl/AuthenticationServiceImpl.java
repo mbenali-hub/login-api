@@ -51,10 +51,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         
         return Jwts.builder()
                     .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis()+expiraEn))
                     .setClaims(claims)
                     .signWith(clavePrivada, SignatureAlgorithm.RS256)
                     .setSubject(userDetails.getUsername())
+                    .setExpiration(new Date(System.currentTimeMillis()+expiraEn))
                     .compact();
     }
 
